@@ -144,7 +144,7 @@ todo/modesls/Todo.pyの実装
 ```
 from django.db import models
 
-class ToDo(models.Model):
+class Todo(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
@@ -157,11 +157,11 @@ class ToDo(models.Model):
 todo/serializers/TodoSerializer.pyの実装
 ```
 from rest_framework import serializers
-from backend.todo.models.Todo import ToDo
+from backend.todo.models.Todo import Todo
 
-class ToDoSerializer(serializers.ModelSerializer):
+class TodoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ToDo
+        model = Todo
         fields = '__all__'
 ```
 todo/views/TodoView.pyの実装
@@ -170,37 +170,37 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
-from backend.todo.models.Todo import ToDo
-from todo.serializers import ToDoSerializer
+from backend.todo.models.Todo import Todo
+from todo.serializers import TodoSerializer
 
-class ToDoListCreate(APIView):
+class TodoListCreate(APIView):
     def get(self, request):
-        todos = ToDo.objects.all()
-        serializer = ToDoSerializer(todos, many=True)
+        todos = Todo.objects.all()
+        serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = ToDoSerializer(data=request.data)
+        serializer = TodoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ToDoDetail(APIView):
+class TodoDetail(APIView):
     def get_object(self, pk):
         try:
-            return ToDo.objects.get(pk=pk)
-        except ToDo.DoesNotExist:
+            return Todo.objects.get(pk=pk)
+        except Todo.DoesNotExist:
             raise Http404
 
     def get(self, request, pk):
         todo = self.get_object(pk)
-        serializer = ToDoSerializer(todo)
+        serializer = TodoSerializer(todo)
         return Response(serializer.data)
 
     def put(self, request, pk):
         todo = self.get_object(pk)
-        serializer = ToDoSerializer(todo, data=request.data)
+        serializer = TodoSerializer(todo, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -216,14 +216,14 @@ todo/urls.pyの実装
 ```
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from todo.views.TodoView import ToDoListCreate, ToDoDetail
+from todo.views.TodoView import TodoListCreate, TodoDetail
 
 router = DefaultRouter()
 
 urlpatterns = [
     path("", include(router.urls)),
-    path('todo/', ToDoListCreate.as_view(), name='todo-list-create'),
-    path('todo/<int:pk>/', ToDoDetail.as_view(), name='todo-detail'),
+    path('todo/', TodoListCreate.as_view(), name='todo-list-create'),
+    path('todo/<int:pk>/', TodoDetail.as_view(), name='todo-detail'),
 ]
 ```
 
