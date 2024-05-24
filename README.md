@@ -227,4 +227,12 @@ urlpatterns = [
 ]
 ```
 
-todo/migrations
+todo/migrationsはフォルダと内容の__init__.pyを作成
+
+
+### フロントエンドをcreate-react-appで実装する
+```
+npx create-react-app frontend --template typescript
+cd frontend
+npm start
+```
