@@ -39,8 +39,18 @@ Djangoを起動してみます。（止める場合は「Ctrl + C」）
 cd backend
 python manage.py runserver
 ```
-こんな画面が出れば正しく起動しています。
+[http://localhost:8000/](http://localhost:8000/)にアクセスし、こんな画面が出れば正しく起動しています。
 ![構成図](/images/django-start-screen.png)
+
+管理画面に入りたいので、特権ユーザーを作成します。
+そのために、データベース（ここではsqlite）にテーブル等を作成します。
+```
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+[http://localhost:8000/admin/](http://localhost:8000/admin/)にアクセスします。
+作成したユーザーでログインできます。
 
 ### フォルダ構成を整理する
 backend/backendをbackend/configに変更する。
@@ -49,8 +59,42 @@ backend/backendをbackend/configに変更する。
 ### 設定ファイルを書き換える
 設定ファイルを本番環境と手元のローカル環境と切り分けます。  
 
-|     |     |     | 
-| --- | --- | --- | 
+|     |     |
+| --- | --- | 
 | 本番環境 | config/production.py |
 | ローカル | config/development.py |
 
+### DjangoをAPIに対応する
+必要なAPI対応のパッケージをインストール。
+```
+pip install django-cors-headers
+pip install djangorestframework
+pip install djangorestframework-simplejwt
+```
+
+設定ファイルに書いていきます。
+```
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    "corsheaders", # 追加
+    "rest_framework", # 追加
+]
+```
+url.pyも修正
+```
+from django.contrib import admin
+from django.urls import include, path # includeを追加
+from rest_framework import routers # 追加
+
+router = routers.DefaultRouter()
+
+urlpatterns = [
+    path("", include(router.urls)), #追加
+    path("admin/", admin.site.urls),
+]
+```
