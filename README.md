@@ -29,8 +29,21 @@ conda install python=3.12
 これでこのアプリケーション用にpythonパッケージをインストールすることができます。
 
 ### Django環境を作っていく
-Djangoを入れて、Djangoのコマンドでプロジェクトを作成
+Djangoを入れて、Djangoのコマンドでプロジェクトを作成（backendフォルダ内にプロジェクトが構築されます。さらにその中にbackendアプリケーションが作成されています）
 ```
 pip install django
-django-admin startproject myapp
+django-admin startproject backend
 ```
+Djangoを起動してみます。（止める場合は「Ctrl + C」）
+```
+cd backend
+python manage.py runserver
+```
+こんな画面が出れば正しく起動しています。
+![構成図](/images/django-start-screen.png)
+
+### フォルダ構成を整理する
+backend/backendをbackend/configに変更する。
+それに伴い、manage.pyやsettings.pyに記述のパスを変更する。
+
+### 設定ファイルを書き換える
