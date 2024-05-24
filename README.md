@@ -98,3 +98,133 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ]
 ```
+
+### バックエンドのtodoモデルを作成
+backend/todoを作成（__init__.pyも）し、その中にmodels、serializers、viewsを作成。  
+URLを定義するurls.pyも作成
+
+
+config/settigns.pyにtodoを追加
+```
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    "corsheaders",
+    "rest_framework",
+    "todo",
+]
+```
+
+config/urls.pyにtodoのurlsを追加
+```
+from django.contrib import admin
+from django.urls import include, path
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+
+urlpatterns = [
+    path("", include(router.urls)),
+    path("admin/", admin.site.urls),
+    path("api/", include("todo.urls")), # 追加
+]
+```
+下記のファイル（フォルダ）を作成
+- todo/modesls/Todo.py
+- todo/serializers/TodoSerializer.py
+- todo/views/TodoView.py
+- todo/urls.py
+- todo/migrations/
+
+todo/modesls/Todo.pyの実装
+```
+from django.db import models
+
+class ToDo(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+```
+
+todo/serializers/TodoSerializer.pyの実装
+```
+from rest_framework import serializers
+from backend.todo.models.Todo import ToDo
+
+class ToDoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ToDo
+        fields = '__all__'
+```
+todo/views/TodoView.pyの実装
+```
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import Http404
+from backend.todo.models.Todo import ToDo
+from todo.serializers import ToDoSerializer
+
+class ToDoListCreate(APIView):
+    def get(self, request):
+        todos = ToDo.objects.all()
+        serializer = ToDoSerializer(todos, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ToDoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ToDoDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return ToDo.objects.get(pk=pk)
+        except ToDo.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        todo = self.get_object(pk)
+        serializer = ToDoSerializer(todo)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        todo = self.get_object(pk)
+        serializer = ToDoSerializer(todo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        todo = self.get_object(pk)
+        todo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+```
+
+todo/urls.pyの実装
+```
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from todo.views.TodoView import ToDoListCreate, ToDoDetail
+
+router = DefaultRouter()
+
+urlpatterns = [
+    path("", include(router.urls)),
+    path('todo/', ToDoListCreate.as_view(), name='todo-list-create'),
+    path('todo/<int:pk>/', ToDoDetail.as_view(), name='todo-detail'),
+]
+```
+
+todo/migrations
