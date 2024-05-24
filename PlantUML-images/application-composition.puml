@@ -1,0 +1,35 @@
+@startuml
+!define RECTANGLE class
+skinparam rectangle {
+  BackgroundColor<<Backend>> #FFFFCC
+  BackgroundColor<<Frontend>> #CCFFFF
+  BackgroundColor<<Database>> #FFCCCC
+  BackgroundColor<<User>> #FFEECC
+}
+
+actor User as user
+
+package "Frontend Server" <<Server>> {
+  rectangle React <<Frontend>> {
+  }
+}
+
+package "Backend Server" <<Server>> {
+  rectangle Django <<Backend>> {
+  }
+  rectangle PostgreSQL <<Database>> {
+  }
+}
+
+user --> "Frontend Server" : Access Website
+"Frontend Server" --> React : Serve Frontend
+React --> "Frontend Server" : Request Data
+"Frontend Server" --> "Backend Server" : API Request
+"Backend Server" --> Django : API Request
+Django --> PostgreSQL : Query
+PostgreSQL --> Django : Data
+Django --> "Backend Server" : API Response
+"Backend Server" --> "Frontend Server" : API Response
+"Frontend Server" --> React : Serve Data
+
+@enduml
