@@ -47,3 +47,10 @@ backend/backendをbackend/configに変更する。
 それに伴い、manage.pyやsettings.pyに記述のパスを変更する。
 
 ### 設定ファイルを書き換える
+設定ファイルを本番環境と手元のローカル環境と切り分けます。  
+
+|     |     |     | 
+| --- | --- | --- | 
+| 本番環境 | config/production.py |
+| ローカル | config/development.py |
+
